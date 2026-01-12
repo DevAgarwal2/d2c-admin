@@ -82,3 +82,64 @@ export async function deleteProduct(formData: FormData) {
   // Return success - client handles redirect
   return { success: true };
 }
+
+export async function saveCategory(formData: FormData) {
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  
+  if (!name || name.trim() === "") {
+    return { error: "missing_name" };
+  }
+  
+  const id = name.toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  
+  const { data: existingCategory } = await adminDb
+    .from("categories")
+    .select("id")
+    .eq("id", id)
+    .single();
+  
+  if (existingCategory) {
+    return { error: "duplicate_id" };
+  }
+  
+  await adminDb.from("categories").insert({
+    id,
+    name,
+    description,
+    icon: "📁",
+  });
+  
+  return { success: true };
+}
+
+export async function deleteCategory(formData: FormData) {
+  const id = formData.get("id") as string;
+  
+  if (!id) {
+    throw new Error("Category ID is required");
+  }
+  
+  await adminDb.from("categories").delete().eq("id", id);
+  
+  return { success: true };
+}
+
+export async function updateCategoryName(formData: FormData) {
+  const id = formData.get("id") as string;
+  const name = formData.get("name") as string;
+  
+  if (!id) {
+    throw new Error("Category ID is required");
+  }
+  
+  if (!name || name.trim() === "") {
+    return { error: "missing_name" };
+  }
+  
+  await adminDb.from("categories").update({ name: name.trim() }).eq("id", id);
+  
+  return { success: true };
+}

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import Image from "next/image";
 import { logout } from "@/app/actions";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, FolderOpen } from "lucide-react";
 import { useState } from "react";
 
 type Product = {
@@ -42,7 +42,15 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
     <div className="min-h-screen bg-slate-50">
       <header className="border-b bg-white sticky top-0 z-10">
         <div className="px-3 sm:px-6 lg:px-8 h-auto py-3 sm:h-16 sm:py-0 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight whitespace-nowrap">StoreAdmin</h1>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight whitespace-nowrap">StoreAdmin</h1>
+            <Button variant="ghost" size="sm" asChild className="text-sm hidden sm:inline-flex">
+              <Link href="/categories">
+                <FolderOpen className="h-4 w-4 mr-1" />
+                Categories
+              </Link>
+            </Button>
+          </div>
           
           <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-between sm:justify-end">
             <div className="relative flex-1 max-w-[200px] sm:max-w-xs md:max-w-md">
@@ -77,11 +85,19 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Products</h2>
             <p className="text-slate-500 text-sm">Manage your store inventory and details.</p>
           </div>
-          <Button size="sm" className="gap-2 w-full sm:w-auto" asChild>
-            <Link href="/products/new">
-              <Plus className="h-4 w-4" /> Add Product
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" asChild className="sm:hidden">
+              <Link href="/categories">
+                <FolderOpen className="h-4 w-4 mr-1" />
+                Categories
+              </Link>
+            </Button>
+            <Button size="sm" className="gap-2" asChild>
+              <Link href="/products/new">
+                <Plus className="h-4 w-4" /> Add Product
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
