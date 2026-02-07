@@ -1,9 +1,9 @@
 import ImageKit from "imagekit";
 
 const imagekit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY || "public_Wmk2RG+ZVObRGnkh33gD5Nfh70E=",
-  privateKey: process.env.IMAGEKIT_PRIVATE_KIT || "private_your_key_here",
-  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT || "https://ik.imagekit.io/pi9wuccc0i",
+  publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY!,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KIT!,
+  urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT!,
 });
 
 export async function GET() {

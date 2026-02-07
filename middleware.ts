@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Protect all other routes
-  if (pathname.startsWith('/products') || pathname === '/') {
+  if (pathname.startsWith('/products') || pathname.startsWith('/categories') || pathname.startsWith('/feedback') || pathname === '/') {
     if (authCookie?.value !== 'true') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
@@ -24,5 +24,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/products/:path*', '/login'],
+  matcher: ['/', '/products/:path*', '/categories/:path*', '/feedback/:path*', '/login'],
 };

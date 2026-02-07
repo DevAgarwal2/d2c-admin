@@ -143,3 +143,66 @@ export async function updateCategoryName(formData: FormData) {
   
   return { success: true };
 }
+
+export async function saveFeedback(formData: FormData) {
+  try {
+    const id = formData.get("id") as string | null;
+    const customerName = formData.get("customer_name") as string;
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
+    const location = formData.get("location") as string;
+    const stars = parseInt(formData.get("stars") as string) || 5;
+    const imageUrl = formData.get("image") as string;
+
+    console.log("Saving feedback:", { customerName, title, description, location, stars, imageUrl, id });
+
+    if (!customerName || !title) {
+      console.log("Missing required fields");
+      return { error: "missing_fields" };
+    }
+
+    const feedbackData = {
+      customer_name: customerName.trim(),
+      title: title.trim(),
+      description: description ? description.trim() : null,
+      location: location ? location.trim() : null,
+      stars,
+      image_url: imageUrl && imageUrl.trim() ? imageUrl.trim() : null,
+    };
+
+    if (id) {
+      console.log("Updating existing feedback:", id);
+      const { error } = await adminDb.from("feedback").update(feedbackData).eq("id", id);
+      if (error) {
+        console.error("Update error:", error);
+        return { error: error.message };
+      }
+    } else {
+      const newId = 'feedback_' + crypto.randomUUID();
+      console.log("Inserting new feedback:", newId);
+      const { error } = await adminDb.from("feedback").insert({ ...feedbackData, id: newId });
+      if (error) {
+        console.error("Insert error:", error);
+        return { error: error.message };
+      }
+    }
+
+    console.log("Feedback saved successfully");
+    return { success: true };
+  } catch (err: any) {
+    console.error("Save feedback error:", err);
+    return { error: err.message || "Unknown error" };
+  }
+}
+
+export async function deleteFeedback(formData: FormData) {
+  const id = formData.get("id") as string;
+
+  if (!id) {
+    throw new Error("Feedback ID is required");
+  }
+
+  await adminDb.from("feedback").delete().eq("id", id);
+
+  return { success: true };
+}

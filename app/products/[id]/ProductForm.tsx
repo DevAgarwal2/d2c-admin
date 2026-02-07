@@ -337,8 +337,8 @@ export default function ProductForm({ product, categories }: { product?: Product
 
   return (
     <IKContext
-      publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || "public_Wmk2RG+ZVObRGnkh33gD5Nfh70E="}
-      urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "https://ik.imagekit.io/pi9wuccc0i"}
+      publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY!}
+      urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT!}
       authenticator={authenticator}
       transformationPosition="path"
     >

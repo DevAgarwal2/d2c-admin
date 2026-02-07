@@ -1,13 +1,13 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import Image from "next/image";
 import { logout } from "@/app/actions";
-import { Search, Plus, FolderOpen } from "lucide-react";
-import { useState } from "react";
+import { Search, Plus, FolderOpen, MessageSquare } from "lucide-react";
 
 type Product = {
   id: string;
@@ -22,8 +22,7 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState(initialProducts);
 
-  // Debounced search
-  useState(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       if (search.trim() === "") {
         setProducts(initialProducts);
@@ -36,7 +35,7 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
     }, 300);
 
     return () => clearTimeout(timer);
-  });
+  }, [search, initialProducts]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -44,12 +43,20 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
         <div className="px-3 sm:px-6 lg:px-8 h-auto py-3 sm:h-16 sm:py-0 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-3 sm:gap-4">
             <h1 className="text-lg sm:text-xl font-bold tracking-tight whitespace-nowrap">StoreAdmin</h1>
-            <Button variant="ghost" size="sm" asChild className="text-sm hidden sm:inline-flex">
-              <Link href="/categories">
-                <FolderOpen className="h-4 w-4 mr-1" />
-                Categories
-              </Link>
-            </Button>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Button variant="ghost" size="sm" asChild className="text-sm hidden sm:inline-flex">
+                <Link href="/categories">
+                  <FolderOpen className="h-4 w-4 mr-1" />
+                  Categories
+                </Link>
+              </Button>
+              <Button variant="ghost" size="sm" asChild className="text-sm hidden sm:inline-flex">
+                <Link href="/feedback">
+                  <MessageSquare className="h-4 w-4 mr-1" />
+                  Feedback
+                </Link>
+              </Button>
+            </div>
           </div>
           
           <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-between sm:justify-end">
@@ -57,18 +64,8 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input 
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  if (e.target.value.trim() === "") {
-                    setProducts(initialProducts);
-                  } else {
-                    const filtered = initialProducts.filter((p) =>
-                      p.title.toLowerCase().includes(e.target.value.toLowerCase())
-                    );
-                    setProducts(filtered);
-                  }
-                }}
-                placeholder="Search..." 
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search products..." 
                 className="pl-10 bg-slate-50 border-slate-200 focus-visible:ring-slate-400 h-9 sm:h-10 text-sm"
               />
             </div>
@@ -92,6 +89,12 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
                 Categories
               </Link>
             </Button>
+            <Button variant="outline" size="sm" asChild className="sm:hidden">
+              <Link href="/feedback">
+                <MessageSquare className="h-4 w-4 mr-1" />
+                Feedback
+              </Link>
+            </Button>
             <Button size="sm" className="gap-2" asChild>
               <Link href="/products/new">
                 <Plus className="h-4 w-4" /> Add Product
@@ -101,7 +104,6 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
         </div>
 
         <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-          {/* Desktop Table */}
           <div className="hidden md:block">
             <Table>
               <TableHeader className="bg-slate-50">
@@ -120,26 +122,17 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
                     <TableCell>
                       {product.image_url ? (
                         <div className="relative w-12 h-12 rounded-md overflow-hidden bg-slate-100">
-                          <Image 
-                            src={product.image_url} 
-                            alt={product.title}
-                            fill
-                            className="object-cover"
-                          />
+                          <Image src={product.image_url} alt={product.title} fill className="object-cover" />
                         </div>
                       ) : (
-                        <div className="w-12 h-12 rounded-md bg-slate-100 flex items-center justify-center text-slate-400 text-xs">
-                          No img
-                        </div>
+                        <div className="w-12 h-12 rounded-md bg-slate-100 flex items-center justify-center text-slate-400 text-xs">No img</div>
                       )}
                     </TableCell>
                     <TableCell className="font-medium text-slate-900">{product.title}</TableCell>
                     <TableCell className="text-slate-600">{product.category_id}</TableCell>
                     <TableCell className="text-slate-900 font-medium">₹{product.price}</TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
-                        product.in_stock ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
-                      }`}>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${product.in_stock ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
                         {product.in_stock ? "In Stock" : "Out of Stock"}
                       </span>
                     </TableCell>
@@ -154,7 +147,6 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
             </Table>
           </div>
 
-          {/* Mobile Card View */}
           <div className="md:hidden">
             {products.length === 0 ? (
               <div className="p-8 text-center text-slate-500 text-sm">
@@ -167,17 +159,10 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
                     <div className="flex items-start gap-3">
                       {product.image_url ? (
                         <div className="relative w-16 h-16 rounded-md overflow-hidden bg-slate-100 shrink-0">
-                          <Image 
-                            src={product.image_url} 
-                            alt={product.title}
-                            fill
-                            className="object-cover"
-                          />
+                          <Image src={product.image_url} alt={product.title} fill className="object-cover" />
                         </div>
                       ) : (
-                        <div className="w-16 h-16 rounded-md bg-slate-100 flex items-center justify-center text-slate-400 text-xs shrink-0">
-                          No img
-                        </div>
+                        <div className="w-16 h-16 rounded-md bg-slate-100 flex items-center justify-center text-slate-400 text-xs shrink-0">No img</div>
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-slate-900 truncate">{product.title}</h3>
@@ -186,9 +171,7 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
-                        product.in_stock ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
-                      }`}>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${product.in_stock ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
                         {product.in_stock ? "In Stock" : "Out of Stock"}
                       </span>
                       <Button variant="outline" size="sm" asChild>
