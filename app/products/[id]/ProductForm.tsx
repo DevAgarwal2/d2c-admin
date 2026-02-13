@@ -62,6 +62,8 @@ export default function ProductForm({ product, categories }: { product?: Product
   const [imageUrl, setImageUrl] = useState(product?.image_url || "");
   const [images, setImages] = useState<string[]>(product?.images || []);
   const [features, setFeatures] = useState<string[]>(product?.features || ["", "", "", "", "", "", ""]);
+  const [hasSizes, setHasSizes] = useState(product?.has_sizes || false);
+  const [sizeVariants, setSizeVariants] = useState<SizeVariant[]>(product?.size_variants || []);
   const [isUploadingMain, setIsUploadingMain] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -94,6 +96,13 @@ export default function ProductForm({ product, categories }: { product?: Product
       featuresInput.value = JSON.stringify(validFeatures);
     }
   }, [features]);
+
+  useEffect(() => {
+    const sizeVariantsInput = document.getElementById('size-variants-input') as HTMLInputElement;
+    if (sizeVariantsInput) {
+      sizeVariantsInput.value = JSON.stringify(sizeVariants);
+    }
+  }, [sizeVariants]);
 
   const handleMainUploadSuccess = (response: any) => {
     setImageUrl(response.url);
@@ -689,63 +698,86 @@ export default function ProductForm({ product, categories }: { product?: Product
                   <CardDescription className="text-xs sm:text-sm">Add size options (Small, Medium, Big) with different prices.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <input type="hidden" id="size-variants-input" name="size_variants" value={JSON.stringify(sizeVariants)} />
                   <div className="flex items-center gap-3">
-                    <input 
-                      id="has_sizes" 
-                      name="has_sizes" 
-                      type="checkbox" 
-                      defaultChecked={product?.has_sizes ?? false}
+                    <input
+                      id="has_sizes"
+                      name="has_sizes"
+                      type="checkbox"
+                      checked={hasSizes}
+                      onChange={(e) => setHasSizes(e.target.checked)}
                       className="w-4 h-4 rounded border-slate-300"
                     />
                     <Label htmlFor="has_sizes" className="text-xs sm:text-sm font-medium">This product has multiple sizes</Label>
                   </div>
-                  
-                  {product?.has_sizes && (
+
+                  {hasSizes && (
                     <div className="space-y-3 border-t border-slate-100 pt-4">
                       <p className="text-xs text-slate-500">Define size variants:</p>
-                      {(product?.size_variants || []).map((variant, index) => (
-                        <div key={index} className="grid grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg">
+                      {sizeVariants.map((variant, index) => (
+                        <div key={index} className="grid grid-cols-[1fr_1fr_auto_auto] gap-3 p-3 bg-slate-50 rounded-lg items-end">
                           <div>
-                            <Label className="text-xs text-slate-500">Size</Label>
-                            <Input 
-                              name={`size_name_${index}`}
-                              defaultValue={variant.size}
-                              placeholder="Small"
-                              className="h-8 text-sm mt-1"
+                            <Label className="text-xs text-slate-500">Size Name</Label>
+                            <Input
+                              value={variant.size}
+                              onChange={(e) => {
+                                const newVariants = [...sizeVariants];
+                                newVariants[index].size = e.target.value;
+                                setSizeVariants(newVariants);
+                              }}
+                              placeholder="e.g., Small"
+                              className="h-9 text-sm mt-1"
                             />
                           </div>
                           <div>
                             <Label className="text-xs text-slate-500">Price (₹)</Label>
-                            <Input 
-                              name={`size_price_${index}`}
+                            <Input
                               type="number"
-                              defaultValue={variant.price}
+                              value={variant.price}
+                              onChange={(e) => {
+                                const newVariants = [...sizeVariants];
+                                newVariants[index].price = parseInt(e.target.value) || 0;
+                                setSizeVariants(newVariants);
+                              }}
                               placeholder="0"
-                              className="h-8 text-sm mt-1"
+                              className="h-9 text-sm mt-1"
                             />
                           </div>
-                          <div className="flex items-end">
-                            <div className="flex items-center gap-2">
-                              <input 
-                                name={`size_stock_${index}`}
-                                type="checkbox"
-                                defaultChecked={variant.in_stock}
-                                className="w-4 h-4 rounded border-slate-300"
-                              />
-                              <Label className="text-xs">In Stock</Label>
-                            </div>
+                          <div className="flex items-center gap-2 pb-2">
+                            <input
+                              type="checkbox"
+                              checked={variant.in_stock}
+                              onChange={(e) => {
+                                const newVariants = [...sizeVariants];
+                                newVariants[index].in_stock = e.target.checked;
+                                setSizeVariants(newVariants);
+                              }}
+                              className="w-4 h-4 rounded border-slate-300"
+                            />
+                            <Label className="text-xs">In Stock</Label>
                           </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const newVariants = sizeVariants.filter((_, i) => i !== index);
+                              setSizeVariants(newVariants);
+                            }}
+                            className="h-9 w-9 p-0 text-red-500 hover:text-red-700"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
                         </div>
                       ))}
-                      
-                      <Button 
+
+                      <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         className="w-full"
                         onClick={() => {
-                          const newVariant = { size: '', price: 0, in_stock: true };
-                          // This would need proper state management
+                          setSizeVariants([...sizeVariants, { size: '', price: 0, in_stock: true }]);
                         }}
                       >
                         + Add Size Variant
