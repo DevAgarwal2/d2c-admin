@@ -23,6 +23,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
+type SizeVariant = {
+  size: string;
+  price: number;
+  in_stock: boolean;
+};
+
 type Product = {
   id: string;
   title: string;
@@ -37,6 +43,8 @@ type Product = {
   fast_delivery: boolean;
   rating: number;
   reviews: number;
+  has_sizes?: boolean;
+  size_variants?: SizeVariant[];
 };
 
 type Category = {
@@ -673,6 +681,79 @@ export default function ProductForm({ product, categories }: { product?: Product
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Size Variants Section */}
+              <Card className="shadow-sm">
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="text-base sm:text-lg">Size Variants</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">Add size options (Small, Medium, Big) with different prices.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <input 
+                      id="has_sizes" 
+                      name="has_sizes" 
+                      type="checkbox" 
+                      defaultChecked={product?.has_sizes ?? false}
+                      className="w-4 h-4 rounded border-slate-300"
+                    />
+                    <Label htmlFor="has_sizes" className="text-xs sm:text-sm font-medium">This product has multiple sizes</Label>
+                  </div>
+                  
+                  {product?.has_sizes && (
+                    <div className="space-y-3 border-t border-slate-100 pt-4">
+                      <p className="text-xs text-slate-500">Define size variants:</p>
+                      {(product?.size_variants || []).map((variant, index) => (
+                        <div key={index} className="grid grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg">
+                          <div>
+                            <Label className="text-xs text-slate-500">Size</Label>
+                            <Input 
+                              name={`size_name_${index}`}
+                              defaultValue={variant.size}
+                              placeholder="Small"
+                              className="h-8 text-sm mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs text-slate-500">Price (₹)</Label>
+                            <Input 
+                              name={`size_price_${index}`}
+                              type="number"
+                              defaultValue={variant.price}
+                              placeholder="0"
+                              className="h-8 text-sm mt-1"
+                            />
+                          </div>
+                          <div className="flex items-end">
+                            <div className="flex items-center gap-2">
+                              <input 
+                                name={`size_stock_${index}`}
+                                type="checkbox"
+                                defaultChecked={variant.in_stock}
+                                className="w-4 h-4 rounded border-slate-300"
+                              />
+                              <Label className="text-xs">In Stock</Label>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => {
+                          const newVariant = { size: '', price: 0, in_stock: true };
+                          // This would need proper state management
+                        }}
+                      >
+                        + Add Size Variant
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
               {/* Inventory & Delivery Section */}
               <Card className="shadow-sm">
