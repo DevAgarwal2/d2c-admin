@@ -23,12 +23,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
-type SizeVariant = {
-  size: string;
-  price: number;
-  in_stock: boolean;
-};
-
 type Product = {
   id: string;
   title: string;
@@ -43,8 +37,6 @@ type Product = {
   fast_delivery: boolean;
   rating: number;
   reviews: number;
-  has_sizes?: boolean;
-  size_variants?: SizeVariant[];
 };
 
 type Category = {
@@ -62,8 +54,6 @@ export default function ProductForm({ product, categories }: { product?: Product
   const [imageUrl, setImageUrl] = useState(product?.image_url || "");
   const [images, setImages] = useState<string[]>(product?.images || []);
   const [features, setFeatures] = useState<string[]>(product?.features || ["", "", "", "", "", "", ""]);
-  const [hasSizes, setHasSizes] = useState(product?.has_sizes || false);
-  const [sizeVariants, setSizeVariants] = useState<SizeVariant[]>(product?.size_variants || []);
   const [isUploadingMain, setIsUploadingMain] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -96,13 +86,6 @@ export default function ProductForm({ product, categories }: { product?: Product
       featuresInput.value = JSON.stringify(validFeatures);
     }
   }, [features]);
-
-  useEffect(() => {
-    const sizeVariantsInput = document.getElementById('size-variants-input') as HTMLInputElement;
-    if (sizeVariantsInput) {
-      sizeVariantsInput.value = JSON.stringify(sizeVariants);
-    }
-  }, [sizeVariants]);
 
   const handleMainUploadSuccess = (response: any) => {
     setImageUrl(response.url);
@@ -690,102 +673,6 @@ export default function ProductForm({ product, categories }: { product?: Product
                   </CardContent>
                 </Card>
               </div>
-
-              {/* Size Variants Section */}
-              <Card className="shadow-sm">
-                <CardHeader className="pb-3 sm:pb-4">
-                  <CardTitle className="text-base sm:text-lg">Size Variants</CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">Add size options (Small, Medium, Big) with different prices.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <input type="hidden" id="size-variants-input" name="size_variants" value={JSON.stringify(sizeVariants)} />
-                  <div className="flex items-center gap-3">
-                    <input
-                      id="has_sizes"
-                      name="has_sizes"
-                      type="checkbox"
-                      checked={hasSizes}
-                      onChange={(e) => setHasSizes(e.target.checked)}
-                      className="w-4 h-4 rounded border-slate-300"
-                    />
-                    <Label htmlFor="has_sizes" className="text-xs sm:text-sm font-medium">This product has multiple sizes</Label>
-                  </div>
-
-                  {hasSizes && (
-                    <div className="space-y-3 border-t border-slate-100 pt-4">
-                      <p className="text-xs text-slate-500">Define size variants:</p>
-                      {sizeVariants.map((variant, index) => (
-                        <div key={index} className="grid grid-cols-[1fr_1fr_auto_auto] gap-3 p-3 bg-slate-50 rounded-lg items-end">
-                          <div>
-                            <Label className="text-xs text-slate-500">Size Name</Label>
-                            <Input
-                              value={variant.size}
-                              onChange={(e) => {
-                                const newVariants = [...sizeVariants];
-                                newVariants[index].size = e.target.value;
-                                setSizeVariants(newVariants);
-                              }}
-                              placeholder="e.g., Small"
-                              className="h-9 text-sm mt-1"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs text-slate-500">Price (₹)</Label>
-                            <Input
-                              type="number"
-                              value={variant.price}
-                              onChange={(e) => {
-                                const newVariants = [...sizeVariants];
-                                newVariants[index].price = parseInt(e.target.value) || 0;
-                                setSizeVariants(newVariants);
-                              }}
-                              placeholder="0"
-                              className="h-9 text-sm mt-1"
-                            />
-                          </div>
-                          <div className="flex items-center gap-2 pb-2">
-                            <input
-                              type="checkbox"
-                              checked={variant.in_stock}
-                              onChange={(e) => {
-                                const newVariants = [...sizeVariants];
-                                newVariants[index].in_stock = e.target.checked;
-                                setSizeVariants(newVariants);
-                              }}
-                              className="w-4 h-4 rounded border-slate-300"
-                            />
-                            <Label className="text-xs">In Stock</Label>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              const newVariants = sizeVariants.filter((_, i) => i !== index);
-                              setSizeVariants(newVariants);
-                            }}
-                            className="h-9 w-9 p-0 text-red-500 hover:text-red-700"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => {
-                          setSizeVariants([...sizeVariants, { size: '', price: 0, in_stock: true }]);
-                        }}
-                      >
-                        + Add Size Variant
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
 
               {/* Inventory & Delivery Section */}
               <Card className="shadow-sm">

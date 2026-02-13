@@ -34,22 +34,17 @@ export async function logout() {
 export async function saveProduct(formData: FormData) {
   const id = formData.get("id") as string | null;
   const imageUrl = formData.get("image") as string;
-
+  
   if (!imageUrl || imageUrl.trim() === "") {
     return { error: "missing_image" };
   }
-
+  
   const imagesJson = formData.get("images") as string;
   const images = imagesJson ? JSON.parse(imagesJson) : [];
-
+  
   const featuresJson = formData.get("features") as string;
   const features = featuresJson ? JSON.parse(featuresJson) : [];
-
-  // Handle size variants
-  const hasSizes = formData.get("has_sizes") === "on";
-  const sizeVariantsJson = formData.get("size_variants") as string;
-  const sizeVariants = sizeVariantsJson ? JSON.parse(sizeVariantsJson) : [];
-
+  
   const productData = {
     title: formData.get("title") as string,
     category_id: formData.get("category") as string,
@@ -63,8 +58,6 @@ export async function saveProduct(formData: FormData) {
     fast_delivery: formData.get("fast_delivery") === "on",
     rating: parseFloat(formData.get("rating") as string) || 5,
     reviews: parseInt(formData.get("reviews") as string) || 0,
-    has_sizes: hasSizes,
-    size_variants: hasSizes ? sizeVariants : [],
   };
 
   if (id) {
