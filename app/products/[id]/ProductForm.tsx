@@ -47,6 +47,10 @@ type Product = {
   reviews: number;
   has_sizes?: boolean;
   size_variants?: SizeVariant[];
+  discount_price?: number;
+  on_discount?: boolean;
+  discount_percent?: number;
+  delivery_charges_apply?: boolean;
 };
 
 type Category = {
@@ -66,6 +70,12 @@ export default function ProductForm({ product, categories }: { product?: Product
   const [features, setFeatures] = useState<string[]>(product?.features || ["", "", "", "", "", "", ""]);
   const [hasSizes, setHasSizes] = useState(product?.has_sizes || false);
   const [sizeVariants, setSizeVariants] = useState<SizeVariant[]>(product?.size_variants || []);
+  const [onDiscount, setOnDiscount] = useState<boolean>(product?.on_discount ?? false);
+  const [discountPrice, setDiscountPrice] = useState<number>(product?.discount_price ?? 0);
+  const [discountPercent, setDiscountPercent] = useState<number>(product?.discount_percent ?? 0);
+  const [inStock, setInStock] = useState<boolean>(
+    product?.in_stock ?? (product?.has_sizes && product?.size_variants ? product.size_variants.some(v => v.in_stock) : true)
+  );
   const [isUploadingMain, setIsUploadingMain] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -105,6 +115,12 @@ export default function ProductForm({ product, categories }: { product?: Product
       sizeVariantsInput.value = JSON.stringify(sizeVariants);
     }
   }, [sizeVariants]);
+
+  useEffect(() => {
+    if (hasSizes && sizeVariants.length > 0) {
+      setInStock(sizeVariants.some(v => v.in_stock));
+    }
+  }, [hasSizes, sizeVariants]);
 
   const handleMainUploadSuccess = (response: any) => {
     setImageUrl(response.url);
@@ -639,27 +655,61 @@ export default function ProductForm({ product, categories }: { product?: Product
                   </CardHeader>
                   <CardContent className="space-y-3 sm:space-y-4">
                     <div className="space-y-1.5 sm:space-y-2">
-                      <Label htmlFor="price" className="text-xs sm:text-sm font-medium">Price (₹)</Label>
-                      <Input 
-                        id="price" 
-                        name="price" 
-                        type="number" 
-                        step="0.01" 
-                        defaultValue={product?.price || ""} 
-                        required 
+                      <Label htmlFor="price" className="text-xs sm:text-sm font-medium">Sale Price (₹)</Label>
+                      <Input
+                        id="price"
+                        name="price"
+                        type="number"
+                        step="0.01"
+                        defaultValue={product?.price || ""}
+                        required
                         className="h-9 sm:h-10 text-sm"
                       />
+                      <p className="text-[11px] text-slate-500">The price customers pay.</p>
                     </div>
                     <div className="space-y-1.5 sm:space-y-2">
-                      <Label htmlFor="originalPrice" className="text-xs sm:text-sm font-medium">Original Price (₹)</Label>
-                      <Input 
-                        id="originalPrice" 
-                        name="originalPrice" 
-                        type="number" 
-                        step="0.01" 
-                        defaultValue={product?.original_price || ""} 
+                      <Label htmlFor="originalPrice" className="text-xs sm:text-sm font-medium">Original / MRP Price (₹)</Label>
+                      <Input
+                        id="originalPrice"
+                        name="originalPrice"
+                        type="number"
+                        step="0.01"
+                        defaultValue={product?.original_price || ""}
                         className="h-9 sm:h-10 text-sm"
                       />
+                      <p className="text-[11px] text-slate-500">Shown crossed-out next to sale price.</p>
+                    </div>
+                    <div className="space-y-1.5 sm:space-y-2 border-t border-slate-100 pt-3">
+                      <div className="flex items-center gap-3">
+                        <input
+                          id="on_discount"
+                          name="on_discount"
+                          type="checkbox"
+                          checked={onDiscount}
+                          onChange={(e) => setOnDiscount(e.target.checked)}
+                          className="w-4 h-4 rounded border-slate-300"
+                        />
+                        <Label htmlFor="on_discount" className="text-xs sm:text-sm font-medium">On Discount / Sale</Label>
+                      </div>
+                      {onDiscount && (
+                        <div className="space-y-1.5 sm:space-y-2 mt-2">
+                          <Label htmlFor="discount_price" className="text-xs sm:text-sm font-medium">Discount Price (₹)</Label>
+                          <Input
+                            id="discount_price"
+                            name="discount_price"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={discountPrice}
+                            onChange={(e) => setDiscountPrice(parseFloat(e.target.value) || 0)}
+                            placeholder="e.g. 1500"
+                            className="h-9 sm:h-10 text-sm"
+                          />
+                          <p className="text-[11px] text-slate-500">
+                            Final price during the sale. Discount % will be auto-calculated and shown on the storefront.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -833,26 +883,38 @@ export default function ProductForm({ product, categories }: { product?: Product
                 <CardContent className="space-y-3 sm:space-y-4">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="flex items-center gap-3">
-                      <input 
-                        id="in_stock" 
-                        name="in_stock" 
-                        type="checkbox" 
-                        defaultChecked={product?.in_stock ?? true}
+                      <input
+                        id="in_stock"
+                        name="in_stock"
+                        type="checkbox"
+                        checked={inStock}
+                        onChange={(e) => setInStock(e.target.checked)}
                         className="w-4 h-4 rounded border-slate-300"
                       />
                       <Label htmlFor="in_stock" className="text-xs sm:text-sm">In Stock</Label>
                     </div>
                     <div className="flex items-center gap-3">
-                      <input 
-                        id="fast_delivery" 
-                        name="fast_delivery" 
-                        type="checkbox" 
+                      <input
+                        id="fast_delivery"
+                        name="fast_delivery"
+                        type="checkbox"
                         defaultChecked={product?.fast_delivery ?? false}
                         className="w-4 h-4 rounded border-slate-300"
                       />
                       <Label htmlFor="fast_delivery" className="text-xs sm:text-sm">Fast Delivery</Label>
                     </div>
                   </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      id="delivery_charges_apply"
+                      name="delivery_charges_apply"
+                      type="checkbox"
+                      defaultChecked={product?.delivery_charges_apply ?? false}
+                      className="w-4 h-4 rounded border-slate-300"
+                    />
+                    <Label htmlFor="delivery_charges_apply" className="text-xs sm:text-sm">Delivery charges apply to this product</Label>
+                  </div>
+                  <p className="text-[11px] text-slate-500">Storefront will show "+ Delivery charges apply".</p>
                 </CardContent>
               </Card>
 

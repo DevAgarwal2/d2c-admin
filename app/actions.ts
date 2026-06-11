@@ -48,23 +48,37 @@ export async function saveProduct(formData: FormData) {
   // Handle size variants
   const hasSizes = formData.get("has_sizes") === "on";
   const sizeVariantsJson = formData.get("size_variants") as string;
-  const sizeVariants = sizeVariantsJson ? JSON.parse(sizeVariantsJson) : [];
+  const sizeVariants: { name: string; size: string; price: number; in_stock: boolean; features: string[] }[] = sizeVariantsJson ? JSON.parse(sizeVariantsJson) : [];
+
+  const onDiscount = formData.get("on_discount") === "on";
+  const discountPrice = parseFloat(formData.get("discount_price") as string) || 0;
+  const originalPriceForPercent = parseFloat(formData.get("originalPrice") as string) || 0;
+  const autoDiscountPercent =
+    onDiscount && originalPriceForPercent > 0 && discountPrice > 0 && discountPrice < originalPriceForPercent
+      ? Math.round(((originalPriceForPercent - discountPrice) / originalPriceForPercent) * 100)
+      : 0;
 
   const productData = {
     title: formData.get("title") as string,
     category_id: formData.get("category") as string,
     price: parseFloat(formData.get("price") as string) || 0,
-    original_price: parseFloat(formData.get("originalPrice") as string) || 0,
+    original_price: originalPriceForPercent,
     image_url: imageUrl,
     images: images,
     features: features,
     description: formData.get("description") as string,
-    in_stock: formData.get("in_stock") === "on",
+    in_stock: hasSizes
+      ? sizeVariants.some((v) => v.in_stock === true)
+      : formData.get("in_stock") === "on",
     fast_delivery: formData.get("fast_delivery") === "on",
     rating: parseFloat(formData.get("rating") as string) || 5,
     reviews: parseInt(formData.get("reviews") as string) || 0,
     has_sizes: hasSizes,
     size_variants: hasSizes ? sizeVariants : [],
+    on_discount: onDiscount,
+    discount_price: onDiscount ? discountPrice : 0,
+    discount_percent: autoDiscountPercent,
+    delivery_charges_apply: formData.get("delivery_charges_apply") === "on",
   };
 
   if (id) {
