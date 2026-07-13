@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const authCookie = request.cookies.get('admin_auth');
   const { pathname } = request.nextUrl;
 
@@ -14,7 +14,13 @@ export function middleware(request: NextRequest) {
   }
 
   // Protect all other routes
-  if (pathname.startsWith('/products') || pathname.startsWith('/categories') || pathname.startsWith('/feedback') || pathname === '/') {
+  if (
+    pathname.startsWith('/products') ||
+    pathname.startsWith('/categories') ||
+    pathname.startsWith('/feedback') ||
+    pathname.startsWith('/curated-favorites') ||
+    pathname === '/'
+  ) {
     if (authCookie?.value !== 'true') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
@@ -24,5 +30,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/products/:path*', '/categories/:path*', '/feedback/:path*', '/login'],
+  matcher: ['/', '/products/:path*', '/categories/:path*', '/feedback/:path*', '/curated-favorites/:path*', '/login'],
 };

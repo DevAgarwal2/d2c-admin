@@ -51,6 +51,7 @@ type Product = {
   on_discount?: boolean;
   discount_percent?: number;
   delivery_charges_apply?: boolean;
+  is_featured?: boolean;
 };
 
 type Category = {
@@ -915,6 +916,19 @@ export default function ProductForm({ product, categories }: { product?: Product
                     <Label htmlFor="delivery_charges_apply" className="text-xs sm:text-sm">Delivery charges apply to this product</Label>
                   </div>
                   <p className="text-[11px] text-slate-500">Storefront will show "+ Delivery charges apply".</p>
+                  <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
+                    <input
+                      id="is_featured"
+                      name="is_featured"
+                      type="checkbox"
+                      defaultChecked={product?.is_featured ?? false}
+                      className="w-4 h-4 rounded border-slate-300"
+                    />
+                    <div>
+                      <Label htmlFor="is_featured" className="text-xs sm:text-sm">Feature in Curated Favorites</Label>
+                      <p className="text-[11px] text-slate-500">Show on the landing page. You can also manage ordering from the Curated Favorites page.</p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 

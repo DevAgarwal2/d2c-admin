@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import Image from "next/image";
 import { logout } from "@/app/actions";
-import { Search, Plus, FolderOpen, MessageSquare, PlayCircle } from "lucide-react";
+import { Search, Plus, FolderOpen, MessageSquare, PlayCircle, Star } from "lucide-react";
 
 type Product = {
   id: string;
@@ -57,6 +57,12 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
                 </Link>
               </Button>
               <Button variant="ghost" size="sm" asChild className="text-sm hidden sm:inline-flex">
+                <Link href="/curated-favorites">
+                  <Star className="h-4 w-4 mr-1" />
+                  Curated
+                </Link>
+              </Button>
+              <Button variant="ghost" size="sm" asChild className="text-sm hidden sm:inline-flex">
                 <Link href="/feedback">
                   <MessageSquare className="h-4 w-4 mr-1" />
                   Feedback
@@ -99,6 +105,12 @@ export default function DashboardClient({ initialProducts }: { initialProducts: 
               <Link href="/videos">
                 <PlayCircle className="h-4 w-4 mr-1" />
                 Stories
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild className="sm:hidden">
+              <Link href="/curated-favorites">
+                <Star className="h-4 w-4 mr-1" />
+                Curated
               </Link>
             </Button>
             <Button variant="outline" size="sm" asChild className="sm:hidden">

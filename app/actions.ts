@@ -79,6 +79,7 @@ export async function saveProduct(formData: FormData) {
     discount_price: onDiscount ? discountPrice : 0,
     discount_percent: autoDiscountPercent,
     delivery_charges_apply: formData.get("delivery_charges_apply") === "on",
+    is_featured: formData.get("is_featured") === "on",
   };
 
   if (id) {
@@ -224,6 +225,59 @@ export async function deleteFeedback(formData: FormData) {
   }
 
   await adminDb.from("feedback").delete().eq("id", id);
+
+  return { success: true };
+}
+
+export async function toggleFeatured(formData: FormData) {
+  const id = formData.get("id") as string;
+  const currentFeatured = formData.get("current_featured") === "true";
+
+  if (!id) {
+    return { error: "Product ID is required" };
+  }
+
+  if (!currentFeatured) {
+    const { count } = await adminDb
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("is_featured", true);
+    if ((count ?? 0) >= 12) {
+      return { error: "You can feature up to 12 products. Unfeature one first." };
+    }
+  }
+
+  const { error } = await adminDb
+    .from("products")
+    .update({ is_featured: !currentFeatured })
+    .eq("id", id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
+export async function reorderFeatured(formData: FormData) {
+  const orderJson = formData.get("order") as string;
+  if (!orderJson) {
+    return { error: "Order payload is required" };
+  }
+
+  let order: { id: string; order: number }[];
+  try {
+    order = JSON.parse(orderJson);
+  } catch {
+    return { error: "Invalid order payload" };
+  }
+
+  for (const item of order) {
+    await adminDb
+      .from("products")
+      .update({ featured_order: item.order })
+      .eq("id", item.id);
+  }
 
   return { success: true };
 }

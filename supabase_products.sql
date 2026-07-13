@@ -45,6 +45,9 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS on_discount       BOOLEAN DEFAULT 
 ALTER TABLE products ADD COLUMN IF NOT EXISTS discount_price    NUMERIC DEFAULT 0;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS discount_percent  NUMERIC DEFAULT 0;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS delivery_charges_apply BOOLEAN DEFAULT false;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS is_featured       BOOLEAN DEFAULT false;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS featured_order    INTEGER DEFAULT 0;
+CREATE INDEX IF NOT EXISTS idx_products_featured ON products (is_featured, featured_order);
 
 -- 4. Preserve existing add_delivery_charge data: if any row has a non-zero value,
 --    mark delivery_charges_apply = true on that row BEFORE we drop the old column.
