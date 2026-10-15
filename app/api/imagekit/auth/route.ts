@@ -2,7 +2,9 @@ import ImageKit from "imagekit";
 
 const imagekit = new ImageKit({
   publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY!,
-  privateKey: process.env.IMAGEKIT_PRIVATE_KIT!,
+  // IMAGEKIT_PRIVATE_KEY is the documented name; keep IMAGEKIT_PRIVATE_KIT as a
+  // fallback for hosts that configured the old (typo'd) variable name.
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY || process.env.IMAGEKIT_PRIVATE_KIT!,
   urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT!,
 });
 
