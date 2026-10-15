@@ -45,10 +45,38 @@ export async function saveProduct(formData: FormData) {
   const featuresJson = formData.get("features") as string;
   const features = featuresJson ? JSON.parse(featuresJson) : [];
 
-  // Handle size variants
+  // Handle size variants (normalized so older rows without per-variant pricing save cleanly)
   const hasSizes = formData.get("has_sizes") === "on";
   const sizeVariantsJson = formData.get("size_variants") as string;
-  const sizeVariants: { name: string; size: string; price: number; in_stock: boolean; features: string[] }[] = sizeVariantsJson ? JSON.parse(sizeVariantsJson) : [];
+  const rawSizeVariants: {
+    name?: string;
+    size?: string;
+    price?: number | string;
+    original_price?: number | string;
+    discount_price?: number | string;
+    in_stock?: boolean;
+    features?: string[];
+  }[] = sizeVariantsJson ? JSON.parse(sizeVariantsJson) : [];
+
+  const sizeVariants = rawSizeVariants.map((v) => {
+    const price = Number(v.price) || 0;
+    const originalPrice = Number(v.original_price) || 0;
+    const discountPrice = Number(v.discount_price) || 0;
+    const autoDiscountPercent =
+      originalPrice > 0 && discountPrice > 0 && discountPrice < originalPrice
+        ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100)
+        : 0;
+    return {
+      name: v.name ?? "",
+      size: v.size ?? "",
+      price,
+      original_price: originalPrice,
+      discount_price: discountPrice,
+      discount_percent: autoDiscountPercent,
+      in_stock: v.in_stock === true,
+      features: Array.isArray(v.features) ? v.features : [],
+    };
+  });
 
   const onDiscount = formData.get("on_discount") === "on";
   const discountPrice = parseFloat(formData.get("discount_price") as string) || 0;

@@ -27,8 +27,19 @@ type SizeVariant = {
   name: string;
   size: string;
   price: number;
+  original_price?: number;
+  discount_price?: number;
   in_stock: boolean;
   features: string[];
+};
+
+// Auto-calculated discount % for a size variant (mirrors the product-level rule)
+const variantDiscountPercent = (v: SizeVariant) => {
+  const original = v.original_price ?? 0;
+  const discount = v.discount_price ?? 0;
+  return original > 0 && discount > 0 && discount < original
+    ? Math.round(((original - discount) / original) * 100)
+    : 0;
 };
 
 type Product = {
@@ -799,34 +810,77 @@ export default function ProductForm({ product, categories }: { product?: Product
                             </div>
                           </div>
                           
-                          <div className="grid grid-cols-[1fr_auto] gap-3">
+                          {/* Row 2: Pricing per size */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
                               <Label className="text-xs text-slate-500">Price (₹)</Label>
                               <Input
                                 type="number"
+                                step="0.01"
                                 value={variant.price}
                                 onChange={(e) => {
                                   const newVariants = [...sizeVariants];
-                                  newVariants[index].price = parseInt(e.target.value) || 0;
+                                  newVariants[index].price = parseFloat(e.target.value) || 0;
                                   setSizeVariants(newVariants);
                                 }}
                                 placeholder="0"
                                 className="h-9 text-sm mt-1"
                               />
+                              <p className="text-[11px] text-slate-500 mt-1">The price customers pay for this size.</p>
                             </div>
-                            <div className="flex items-center gap-2 pt-6">
-                              <input
-                                type="checkbox"
-                                checked={variant.in_stock}
+                            <div>
+                              <Label className="text-xs text-slate-500">Original / MRP (₹)</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={variant.original_price ?? ""}
                                 onChange={(e) => {
                                   const newVariants = [...sizeVariants];
-                                  newVariants[index].in_stock = e.target.checked;
+                                  newVariants[index].original_price = parseFloat(e.target.value) || 0;
                                   setSizeVariants(newVariants);
                                 }}
-                                className="w-4 h-4 rounded border-slate-300"
+                                placeholder="e.g. 2600"
+                                className="h-9 text-sm mt-1"
                               />
-                              <Label className="text-xs">In Stock</Label>
+                              <p className="text-[11px] text-slate-500 mt-1">Shown crossed-out next to this size's price.</p>
                             </div>
+                            <div>
+                              <Label className="text-xs text-slate-500">Discount Price (₹)</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={variant.discount_price ?? ""}
+                                onChange={(e) => {
+                                  const newVariants = [...sizeVariants];
+                                  newVariants[index].discount_price = parseFloat(e.target.value) || 0;
+                                  setSizeVariants(newVariants);
+                                }}
+                                placeholder="e.g. 1500"
+                                className="h-9 text-sm mt-1"
+                              />
+                              {variantDiscountPercent(variant) > 0 ? (
+                                <p className="text-[11px] text-emerald-600 mt-1">
+                                  {variantDiscountPercent(variant)}% off — auto-calculated and shown on the storefront.
+                                </p>
+                              ) : (
+                                <p className="text-[11px] text-slate-500 mt-1">Leave 0 / empty for no discount on this size.</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Row 3: Stock for this size */}
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={variant.in_stock}
+                              onChange={(e) => {
+                                const newVariants = [...sizeVariants];
+                                newVariants[index].in_stock = e.target.checked;
+                                setSizeVariants(newVariants);
+                              }}
+                              className="w-4 h-4 rounded border-slate-300"
+                            />
+                            <Label className="text-xs">In Stock</Label>
                           </div>
                           
                           {/* Features for this size */}
@@ -865,7 +919,7 @@ export default function ProductForm({ product, categories }: { product?: Product
                         size="sm"
                         className="w-full"
                         onClick={() => {
-                          setSizeVariants([...sizeVariants, { name: '', size: '', price: 0, in_stock: true, features: [''] }]);
+                          setSizeVariants([...sizeVariants, { name: '', size: '', price: 0, original_price: 0, discount_price: 0, in_stock: true, features: [''] }]);
                         }}
                       >
                         + Add Size Variant
